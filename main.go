@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"sync/atomic"
@@ -16,16 +14,18 @@ func main() {
 	const filepathRoot = "."
 	const port = "8080"
 
-	apiConf := &apiConfig{}
-	apiConf.fileserverHits.Store(0)
-	mux := http.NewServeMux()
+	apiConf := apiConfig{
+		fileserverHits: atomic.Int32{},
+	}
 
-	mux.Handle("/app/", apiConf.middlewareMetricsInc(
+	mux := http.NewServeMux()
+	fsHandler := apiConf.middlewareMetricsInc(
 		http.StripPrefix(
 			"/app",
 			http.FileServer(http.Dir(filepathRoot)),
 		),
-	))
+	)
+	mux.Handle("/app/", fsHandler)
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 	mux.HandleFunc("POST /api/validate_chirp", handlerChirpsValidate)
@@ -38,7 +38,6 @@ func main() {
 		Handler: mux,
 	}
 
-	log.Printf("Server is running on port: %s \n", port)
-
+	log.Printf("Serving files from %s on port: %s\n", filepathRoot, port)
 	log.Fatal(srv.ListenAndServe())
 }
