@@ -2,10 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"os"
 	"log"
 	"net/http"
+	"os"
 	"sync/atomic"
+
 	"github.com/azmtbek/chirpy/internal/database"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -13,7 +14,8 @@ import (
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
-	db			   *database.Queries
+	db             *database.Queries
+	platform       string
 }
 
 func main() {
@@ -27,13 +29,18 @@ func main() {
 	}
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatalf("Error opening databse: %s", err)	
+		log.Fatalf("Error opening databse: %s", err)
 	}
 	dbQueries := database.New(dbConn)
 
+	env := os.Getenv("PLATFORM")
+	if env == "" {
+		log.Printf("PLATFORM is empty")
+	}
 	apiConf := apiConfig{
 		fileserverHits: atomic.Int32{},
-		db:				dbQueries,
+		db:             dbQueries,
+		platform:       env,
 	}
 
 	mux := http.NewServeMux()
@@ -47,6 +54,7 @@ func main() {
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 	mux.HandleFunc("POST /api/validate_chirp", handlerChirpsValidate)
+	mux.HandleFunc("POST /api/users", apiConf.handlerUsers)
 
 	mux.HandleFunc("GET /admin/metics", apiConf.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiConf.handlerReset)
