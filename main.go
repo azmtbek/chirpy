@@ -53,8 +53,8 @@ func main() {
 	mux.Handle("/app/", fsHandler)
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
-	mux.HandleFunc("POST /api/validate_chirp", handlerChirpsValidate)
 	mux.HandleFunc("POST /api/users", apiConf.handlerUsers)
+	mux.HandleFunc("POST /api/chirps", apiConf.handlerChirps)
 
 	mux.HandleFunc("GET /admin/metics", apiConf.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiConf.handlerReset)

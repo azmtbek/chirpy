@@ -5,19 +5,30 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
-func handlerChirpsValidate(w http.ResponseWriter, r *http.Request) {
+type Chirp struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Body      string    `json:"body"`
+	UserID    uuid.UUID `json:"user_id"`
+}
+
+func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Body string `json:"body"`
+		Body   string `json:"body"`
+		UserID string `json:"user_id"`
 	}
 
-	type returnVals struct {
-		CleandedBody string `json:"cleaned_body"`
+	type response struct {
+		Chirp
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
+	params := paremeters{}
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
@@ -31,9 +42,12 @@ func handlerChirpsValidate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cleanedBody := getCleanedBody(params.Body)
-	respondWithJSON(w, http.StatusOK, returnVals{
-		CleandedBody: cleanedBody,
+	respondWithJSON(w, http.StatusOK, response{
+		Chirp{
+			ID
+		}
 	})
+
 }
 
 func getCleanedBody(body string) string {
