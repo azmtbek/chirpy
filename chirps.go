@@ -5,22 +5,23 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type Chirp struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Body      string    `json:"body"`
-	UserID    uuid.UUID `json:"user_id"`
+	ID        uuid.UUID     `json:"id"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
+	Body      string        `json:"body"`
+	UserID    uuid.NullUUID `json:"user_id"`
 }
 
 func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Body   string `json:"body"`
-		UserID string `json:"user_id"`
+		Body   string        `json:"body"`
+		UserID uuid.NullUUID `json:"user_id"`
 	}
 
 	type response struct {
@@ -28,7 +29,7 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := paremeters{}
+	params := parameters{}
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
@@ -42,10 +43,29 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cleanedBody := getCleanedBody(params.Body)
-	respondWithJSON(w, http.StatusOK, response{
-		Chirp{
-			ID
-		}
+
+	chirp, err := cfg.db.CreateChirp(
+		r.Context(),
+		struct {
+			Body   string
+			UserID uuid.NullUUID
+		}{
+			Body:   cleanedBody,
+			UserID: params.UserID,
+		})
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not create chirp", err)
+		return
+	}
+	respondWithJSON(w, http.StatusCreated, response{
+		Chirp: Chirp{
+			ID:        chirp.ID,
+			CreatedAt: chirp.CreatedAt,
+			UpdatedAt: chirp.UpdatedAt,
+			Body:      chirp.Body,
+			UserID:    chirp.UserID,
+		},
 	})
 
 }
