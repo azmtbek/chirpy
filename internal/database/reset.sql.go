@@ -10,7 +10,6 @@ import (
 )
 
 const reset = `-- name: Reset :exec
-
 DELETE FROM users
 `
 
