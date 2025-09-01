@@ -16,7 +16,7 @@ func (cfg *apiConfig) handlerChirpsGetAll(w http.ResponseWriter, r *http.Request
 	var chirpsRes []Chirp
 
 	for _, chirp := range chirps {
-		chirpsRes = append(chirpsRes,  Chirp{
+		chirpsRes = append(chirpsRes, Chirp{
 			ID:        chirp.ID,
 			CreatedAt: chirp.CreatedAt,
 			UpdatedAt: chirp.UpdatedAt,
@@ -28,4 +28,3 @@ func (cfg *apiConfig) handlerChirpsGetAll(w http.ResponseWriter, r *http.Request
 	respondWithJSON(w, http.StatusOK, chirpsRes)
 
 }
-
