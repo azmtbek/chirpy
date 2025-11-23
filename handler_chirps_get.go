@@ -9,14 +9,12 @@ import (
 func (cfg *apiConfig) handlerChirpsGetOne(w http.ResponseWriter, r *http.Request) {
 	chirpIDString := r.PathValue("chirpID")
 	chirpID, err := uuid.Parse(chirpIDString)
-
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid chirp ID", err)
 		return
 	}
 
-	dbChirp, err := cfg.db.GetOneChirp(r.Context(), chirpID)
-
+	dbChirp, err := cfg.db.GetChirp(r.Context(), chirpID)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "Could not get a chirp", err)
 		return
@@ -34,12 +32,12 @@ func (cfg *apiConfig) handlerChirpsGetOne(w http.ResponseWriter, r *http.Request
 }
 
 func (cfg *apiConfig) handlerChirpsGetAll(w http.ResponseWriter, r *http.Request) {
-	dbChirps, err := cfg.db.GetAllChirps(r.Context())
+	dbChirps, err := cfg.db.GetChirps(r.Context())
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not get chirps", err)
 		return
 	}
-	
+
 	chirps := []Chirp{}
 	for _, chirp := range dbChirps {
 		chirps = append(chirps, Chirp{
@@ -52,7 +50,4 @@ func (cfg *apiConfig) handlerChirpsGetAll(w http.ResponseWriter, r *http.Request
 	}
 
 	respondWithJSON(w, http.StatusOK, chirps)
-
 }
-
-

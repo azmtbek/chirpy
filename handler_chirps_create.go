@@ -75,14 +75,14 @@ func validateChirp(body string) (string, error) {
 func getCleanedBody(body string) string {
 	badWords := map[string]struct{}{
 		"kerfuffle": {},
-		"sharbert": {},
-		"fornax": {},
+		"sharbert":  {},
+		"fornax":    {},
 	}
 
 	words := strings.Split(body, " ")
 	for i, word := range words {
 		lowerWord := strings.ToLower(word)
-		if _, ok := badWords[lowerWord];  ok {
+		if _, ok := badWords[lowerWord]; ok {
 			words[i] = "****"
 		}
 	}
