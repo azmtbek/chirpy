@@ -53,7 +53,7 @@ func main() {
 	mux.Handle("/app/", fsHandler)
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
-	mux.HandleFunc("POST /api/users", apiConf.handlerUsers)
+	mux.HandleFunc("POST /api/users", apiConf.handlerUsersCreate)
 	mux.HandleFunc("POST /api/login", apiConf.handlerLogin)
 	mux.HandleFunc("POST /api/chirps", apiConf.handlerChirpsCreate)
 	mux.HandleFunc("GET /api/chirps", apiConf.handlerChirpsGetAll)
