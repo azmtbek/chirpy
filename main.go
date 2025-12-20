@@ -22,7 +22,11 @@ func main() {
 	const filepathRoot = "."
 	const port = "8080"
 
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("godotenv load failed ")
+	}
+
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("DB_URL must be set")
