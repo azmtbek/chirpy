@@ -3,18 +3,29 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/azmtbek/chirpy/internal/auth"
+	"github.com/google/uuid"
 )
+
+type UserWithToken struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Email     string    `json:"email"`
+	Token     string    `json:"token"`
+}
 
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email            string `json:"email"`
+		Password         string `json:"password"`
+		ExpiresInSeconds int    `json:"expires_in_seconds"`
 	}
 
 	type response struct {
-		User
+		UserWithToken
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -37,12 +48,30 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	expirationTime := getExpirationTime(params.ExpiresInSeconds)
+
+	jwt, err := auth.MakeJWT(user.ID, cfg.secret, expirationTime)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couln't generate token", err)
+		return
+	}
+
 	respondWithJSON(w, http.StatusOK, response{
-		User: User{
+		UserWithToken: UserWithToken{
 			ID:        user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 			Email:     user.Email,
+			Token:     jwt,
 		},
 	})
+}
+
+func getExpirationTime(userInput int) time.Duration {
+	expiration := 60 * 60 // 1 hour
+	if userInput != 0 {
+		expiration = min(userInput, expiration)
+	}
+
+	return time.Duration(expiration) * time.Second
 }

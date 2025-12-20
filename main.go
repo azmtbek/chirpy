@@ -16,6 +16,7 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 	db             *database.Queries
 	platform       string
+	secret         string
 }
 
 func main() {
@@ -41,10 +42,17 @@ func main() {
 	if env == "" {
 		log.Printf("PLATFORM is empty")
 	}
+
+	secretString := os.Getenv("SECRET")
+	if secretString == "" {
+		log.Fatal("SECRET must be set")
+	}
+
 	apiConf := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db:             dbQueries,
 		platform:       env,
+		secret:         secretString,
 	}
 
 	mux := http.NewServeMux()
