@@ -32,7 +32,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	match, err := auth.CheckPasswordHash(params.Password, user.Password)
-	if match != true || err != nil {
+	if err != nil || !match {
 		respondWithError(w, http.StatusUnauthorized, "401 Unauthorized", err)
 		return
 	}
