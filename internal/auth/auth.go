@@ -4,13 +4,17 @@
 package auth
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/alexedwards/argon2id"
 )
 
+// ErrorNoAuthHeaderIncluded -
+var ErrorNoAuthHeaderIncluded = errors.New("no auth header included in the request")
+
+// HashPassword -
 func HashPassword(password string) (string, error) {
 	hash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
 	if err != nil {
@@ -20,6 +24,7 @@ func HashPassword(password string) (string, error) {
 	return hash, nil
 }
 
+// CheckPasswordHash -
 func CheckPasswordHash(password, hash string) (bool, error) {
 	match, err := argon2id.ComparePasswordAndHash(password, hash)
 	if err != nil {
@@ -29,16 +34,16 @@ func CheckPasswordHash(password, hash string) (bool, error) {
 	return match, nil
 }
 
+// GetBearerToken -
 func GetBearerToken(headers http.Header) (string, error) {
 	authHeader := headers.Get("Authorization")
-
 	if authHeader == "" {
-		return "", fmt.Errorf("no authorization header")
+		return "", ErrorNoAuthHeaderIncluded
 	}
 
 	authSlice := strings.Split(authHeader, " ")
 	if authSlice[0] != "Bearer" || len(authSlice) != 2 {
-		return "", fmt.Errorf("invalid auth header")
+		return "", errors.New("malformed auth header")
 	}
 	return authSlice[1], nil
 }

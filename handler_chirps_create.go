@@ -26,13 +26,13 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 	}
 	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't get Auth Token", err)
+		respondWithError(w, http.StatusUnauthorized, "Couldn't find JWT", err)
 		return
 	}
 
-	userID, err := auth.ValidateJWT(token, cfg.secret)
+	userID, err := auth.ValidateJWT(token, cfg.jwtSecret)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Not Authorized", err)
+		respondWithError(w, http.StatusUnauthorized, "Couldn't validate JWT", err)
 		return
 	}
 
@@ -40,7 +40,7 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 	params := parameters{}
 	err = decoder.Decode(&params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters", err)
+		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
 		return
 	}
 

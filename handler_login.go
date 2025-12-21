@@ -25,7 +25,9 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type response struct {
-		UserWithToken
+		User
+		Token        string `json:"token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -48,30 +50,24 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expirationTime := getExpirationTime(params.ExpiresInSeconds)
+	expirationTime := time.Hour
+	if params.ExpiresInSeconds > 0 && params.ExpiresInSeconds < 3600 {
+		expirationTime = time.Duration(params.ExpiresInSeconds) * time.Second
+	}
 
-	jwt, err := auth.MakeJWT(user.ID, cfg.secret, expirationTime)
+	accessToken, err := auth.MakeJWT(user.ID, cfg.jwtSecret, expirationTime)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couln't generate token", err)
 		return
 	}
 
 	respondWithJSON(w, http.StatusOK, response{
-		UserWithToken: UserWithToken{
+		User: User{
 			ID:        user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 			Email:     user.Email,
-			Token:     jwt,
 		},
+		Token: accessToken,
 	})
-}
-
-func getExpirationTime(userInput int) time.Duration {
-	expiration := 60 * 60 // 1 hour
-	if userInput != 0 {
-		expiration = min(userInput, expiration)
-	}
-
-	return time.Duration(expiration) * time.Second
 }

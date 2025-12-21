@@ -12,9 +12,11 @@ import (
 type TokenType string
 
 const (
+	// TokenTypeAccess -
 	TokenTypeAccess TokenType = "chirpy-access"
 )
 
+// MakeJWT -
 func MakeJWT(
 	userID uuid.UUID,
 	tokenSecret string,
@@ -28,11 +30,12 @@ func MakeJWT(
 		Subject:   userID.String(),
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 	return token.SignedString(signingKey)
 }
 
+// ValidateJWT -
 func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 	claimsStruct := jwt.RegisteredClaims{}
 	token, err := jwt.ParseWithClaims(

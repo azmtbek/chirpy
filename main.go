@@ -16,7 +16,7 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 	db             *database.Queries
 	platform       string
-	secret         string
+	jwtSecret      string
 }
 
 func main() {
@@ -25,34 +25,34 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("godotenv load failed ")
+		log.Fatal("godotenv load failed")
 	}
 
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("DB_URL must be set")
 	}
+	platform := os.Getenv("PLATFORM")
+	if platform == "" {
+		log.Fatal("PLATFORM must be set")
+	}
+
+	jwtSecret := os.Getenv("SECRET")
+	if jwtSecret == "" {
+		log.Fatal("SECRET must be set")
+	}
+
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Error opening databse: %s", err)
 	}
 	dbQueries := database.New(dbConn)
 
-	env := os.Getenv("PLATFORM")
-	if env == "" {
-		log.Printf("PLATFORM is empty")
-	}
-
-	secretString := os.Getenv("SECRET")
-	if secretString == "" {
-		log.Fatal("SECRET must be set")
-	}
-
 	apiConf := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db:             dbQueries,
-		platform:       env,
-		secret:         secretString,
+		platform:       platform,
+		jwtSecret:      jwtSecret,
 	}
 
 	mux := http.NewServeMux()
