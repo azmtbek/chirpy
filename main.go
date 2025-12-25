@@ -37,9 +37,9 @@ func main() {
 		log.Fatal("PLATFORM must be set")
 	}
 
-	jwtSecret := os.Getenv("SECRET")
+	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		log.Fatal("SECRET must be set")
+		log.Fatal("JWT_SECRET must be set")
 	}
 
 	dbConn, err := sql.Open("postgres", dbURL)
@@ -65,8 +65,13 @@ func main() {
 	mux.Handle("/app/", fsHandler)
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
-	mux.HandleFunc("POST /api/users", apiConf.handlerUsersCreate)
+
 	mux.HandleFunc("POST /api/login", apiConf.handlerLogin)
+	mux.HandleFunc("POST /api/refresh", apiConf.handlerRefresh)
+	mux.HandleFunc("POST /api/revoke", apiConf.handlerRevoke)
+
+	mux.HandleFunc("POST /api/users", apiConf.handlerUsersCreate)
+
 	mux.HandleFunc("POST /api/chirps", apiConf.handlerChirpsCreate)
 	mux.HandleFunc("GET /api/chirps", apiConf.handlerChirpsGetAll)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiConf.handlerChirpsGetOne)

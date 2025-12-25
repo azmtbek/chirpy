@@ -30,7 +30,7 @@ func MakeJWT(
 		Subject:   userID.String(),
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString(signingKey)
 }
