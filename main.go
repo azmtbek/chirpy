@@ -17,6 +17,7 @@ type apiConfig struct {
 	db             *database.Queries
 	platform       string
 	jwtSecret      string
+	polkaKey       string
 }
 
 func main() {
@@ -42,6 +43,11 @@ func main() {
 		log.Fatal("JWT_SECRET must be set")
 	}
 
+	polkaKey := os.Getenv("POLKA_KEY")
+	if polkaKey == "" {
+		log.Fatal("POLKA_KEY must be set")
+	}
+
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Error opening databse: %s", err)
@@ -53,6 +59,7 @@ func main() {
 		db:             dbQueries,
 		platform:       platform,
 		jwtSecret:      jwtSecret,
+		polkaKey:       polkaKey,
 	}
 
 	mux := http.NewServeMux()
@@ -71,10 +78,14 @@ func main() {
 	mux.HandleFunc("POST /api/revoke", apiConf.handlerRevoke)
 
 	mux.HandleFunc("POST /api/users", apiConf.handlerUsersCreate)
+	mux.HandleFunc("PUT /api/users", apiConf.handlerUsersPut)
 
 	mux.HandleFunc("POST /api/chirps", apiConf.handlerChirpsCreate)
 	mux.HandleFunc("GET /api/chirps", apiConf.handlerChirpsGetAll)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiConf.handlerChirpsGetOne)
+	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiConf.handlerChirpsDelete)
+
+	mux.HandleFunc("POST /api/polka/webhooks", apiConf.handlerPolkaWebhooks)
 
 	mux.HandleFunc("GET /admin/metics", apiConf.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiConf.handlerReset)
