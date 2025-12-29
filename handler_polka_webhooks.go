@@ -18,12 +18,12 @@ func (cfg *apiConfig) handlerPolkaWebhooks(w http.ResponseWriter, r *http.Reques
 	}
 	apiKey, err := auth.GetAPIKey(r.Header)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Not authorized", err)
+		respondWithError(w, http.StatusUnauthorized, "Couldn't find api key", err)
 		return
 	}
 
 	if apiKey != cfg.polkaKey {
-		respondWithError(w, http.StatusUnauthorized, "Not authorized", err)
+		respondWithError(w, http.StatusUnauthorized, "API key is invalid", err)
 		return
 	}
 

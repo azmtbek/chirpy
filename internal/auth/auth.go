@@ -44,7 +44,7 @@ func GetBearerToken(headers http.Header) (string, error) {
 	}
 
 	authSlice := strings.Split(authHeader, " ")
-	if authSlice[0] != "Bearer" || len(authSlice) != 2 {
+	if len(authSlice) < 2 || authSlice[0] != "Bearer" {
 		return "", errors.New("malformed auth header")
 	}
 	return authSlice[1], nil
@@ -65,7 +65,7 @@ func GetAPIKey(headers http.Header) (string, error) {
 	}
 
 	authSlice := strings.Split(authHeader, " ")
-	if authSlice[0] != "ApiKey" || len(authSlice) != 2 {
+	if len(authSlice) < 2 || authSlice[0] != "ApiKey" {
 		return "", errors.New("malformed auth header")
 	}
 	return authSlice[1], nil
